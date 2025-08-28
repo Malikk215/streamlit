@@ -55,8 +55,8 @@ class SignLanguageDetector:
         self.hands = self.mp_hands.Hands(
             static_image_mode=True,
             max_num_hands=1,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
+            min_detection_confidence=0.3,  # Lebih rendah untuk deteksi yang lebih sensitif
+            min_tracking_confidence=0.3    # Lebih rendah
         )
         self.mp_drawing = mp.solutions.drawing_utils
         self.model = None
@@ -89,11 +89,14 @@ class SignLanguageDetector:
             if isinstance(image, Image.Image):
                 image = np.array(image)
             
-            # Convert BGR to RGB if needed
-            if len(image.shape) == 3 and image.shape[2] == 3:
-                rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # Pastikan format RGB untuk MediaPipe
+            if len(image.shape) == 3:
+                if image.shape[2] == 4:  # RGBA
+                    rgb_image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+                elif image.shape[2] == 3:  # Asumsi sudah RGB dari PIL
+                    rgb_image = image
             else:
-                rgb_image = image
+                rgb_image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
             
             # Process image
             results = self.hands.process(rgb_image)
@@ -191,7 +194,8 @@ selected_model = st.sidebar.selectbox(
     index=0
 )
 
-model_path = f"c:\\Users\\Malik\\sign_language_app\\python\\{selected_model}"
+# Ganti baris 194
+model_path = selected_model  # Hapus path absolut yang panjang
 
 # Load model
 if st.sidebar.button("🔄 Load Model") or 'model_loaded' not in st.session_state:
