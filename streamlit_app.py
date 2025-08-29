@@ -371,13 +371,13 @@ with tab2:
         import numpy as np
         import cv2
         import mediapipe as mp
-        import pickle
 
         image = Image.open(img_file)
         st.image(image, caption="Gambar dari Webcam")
 
-        # load model
-        model = pickle.load(open("model/sign_model.pkl", "rb"))
+        # Gunakan model yang dipilih dari sidebar
+        # (sudah di-load di bagian atas script)
+        # variabel: model
 
         # proses dengan mediapipe
         mp_hands = mp.solutions.hands
