@@ -363,33 +363,57 @@ with tab1:
 
 # Tab 2: Webcam Real-time
 with tab2:
-    st.header("📹 Webcam Real-time Detection")
+    st.header("📹 Deteksi Real-time dengan Webcam")
 
-    import av
-    from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+    if st.session_state.get('model_loaded', False):
+        st.info("💡 **Instruksi:** Klik tombol di bawah untuk memulai deteksi real-time")
 
-    class VideoProcessor(VideoTransformerBase):
-        def __init__(self):
-            self.face_cascade = cv2.CascadeClassifier(
-                cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-            )
+        # Webcam controls
+        col1, col2, col3 = st.columns(3)
 
-        def transform(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            faces = self.face_cascade.detectMultiScale(gray, 1.1, 4)
+        with col1:
+            start_webcam = st.button("🎥 Mulai Webcam", type="primary")
 
-            for (x, y, w, h) in faces:
-                cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        with col2:
+            stop_webcam = st.button("⏹️ Stop Webcam")
 
-            return img
+        with col3:
+            capture_frame = st.button("📸 Capture Frame")
 
-    webrtc_streamer(
-        key="example",
-        video_processor_factory=VideoProcessor,
-        media_stream_constraints={"video": True, "audio": False}
-    )
+        # Webcam placeholder
+        webcam_placeholder = st.empty()
+        prediction_placeholder = st.empty()
 
+        # Initialize session state for webcam
+        if 'webcam_running' not in st.session_state:
+            st.session_state.webcam_running = False
+
+        if start_webcam:
+            st.session_state.webcam_running = True
+
+        if stop_webcam:
+            st.session_state.webcam_running = False
+
+        # Webcam loop (simplified for demo)
+        if st.session_state.webcam_running:
+            st.info("🔴 Webcam aktif - Tunjukkan gesture bahasa isyarat Anda!")
+
+            # Note: Real webcam implementation would require additional setup
+            # This is a placeholder for the webcam functionality
+            webcam_placeholder.info("""
+            📹 **Webcam Real-time Mode**
+            
+            Untuk implementasi webcam real-time, jalankan script berikut di terminal:
+            
+            ```bash
+            cd python
+            python webcam.py
+            ```
+            
+            Atau gunakan mode upload gambar di tab sebelumnya untuk testing.
+            """)
+    else:
+        st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
 
 # Tab 3: Model Information
 with tab3:
