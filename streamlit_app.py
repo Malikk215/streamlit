@@ -363,57 +363,22 @@ with tab1:
 
 # Tab 2: Webcam Real-time
 with tab2:
-    st.header("📹 Deteksi Real-time dengan Webcam")
+    st.header("📸 Ambil Gambar dari Webcam")
 
-    if st.session_state.get('model_loaded', False):
-        st.info("💡 **Instruksi:** Klik tombol di bawah untuk memulai deteksi real-time")
+    img_file = st.camera_input("Ambil gambar dengan webcam")
+    if img_file is not None:
+        from PIL import Image
+        image = Image.open(img_file)
 
-        # Webcam controls
-        col1, col2, col3 = st.columns(3)
+        # tampilkan hasil capture
+        st.image(image, caption="Gambar dari Webcam")
 
-        with col1:
-            start_webcam = st.button("🎥 Mulai Webcam", type="primary")
+        # di sini kamu bisa lanjutkan proses hand sign recognition
+        # misalnya konversi ke array, ekstrak fitur, lalu prediksi model
+        # contoh dummy:
+        # result = model.predict(preprocess(image))
+        # st.success(f"Prediksi: {result}")
 
-        with col2:
-            stop_webcam = st.button("⏹️ Stop Webcam")
-
-        with col3:
-            capture_frame = st.button("📸 Capture Frame")
-
-        # Webcam placeholder
-        webcam_placeholder = st.empty()
-        prediction_placeholder = st.empty()
-
-        # Initialize session state for webcam
-        if 'webcam_running' not in st.session_state:
-            st.session_state.webcam_running = False
-
-        if start_webcam:
-            st.session_state.webcam_running = True
-
-        if stop_webcam:
-            st.session_state.webcam_running = False
-
-        # Webcam loop (simplified for demo)
-        if st.session_state.webcam_running:
-            st.info("🔴 Webcam aktif - Tunjukkan gesture bahasa isyarat Anda!")
-
-            # Note: Real webcam implementation would require additional setup
-            # This is a placeholder for the webcam functionality
-            webcam_placeholder.info("""
-            📹 **Webcam Real-time Mode**
-            
-            Untuk implementasi webcam real-time, jalankan script berikut di terminal:
-            
-            ```bash
-            cd python
-            python webcam.py
-            ```
-            
-            Atau gunakan mode upload gambar di tab sebelumnya untuk testing.
-            """)
-    else:
-        st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
 
 # Tab 3: Model Information
 with tab3:
