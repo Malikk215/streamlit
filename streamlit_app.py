@@ -9,7 +9,9 @@ import os
 import json
 from pathlib import Path
 import time
-import pandas as pd  # Tambahkan ini
+import pandas as pd
+import av
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
 # Configure page
 st.set_page_config(
@@ -54,7 +56,7 @@ class SignLanguageDetector:
     def __init__(self):
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(
-            static_image_mode=True,
+            static_image_mode=False,
             max_num_hands=1,
             min_detection_confidence=0.3,  # Lebih rendah untuk deteksi yang lebih sensitif
             min_tracking_confidence=0.3    # Lebih rendah
@@ -361,57 +363,34 @@ with tab1:
 
 # Tab 2: Webcam Real-time
 with tab2:
-    st.header("📹 Deteksi Real-time dengan Webcam")
-    
-    if st.session_state.get('model_loaded', False):
-        st.info("💡 **Instruksi:** Klik tombol di bawah untuk memulai deteksi real-time")
-        
-        # Webcam controls
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            start_webcam = st.button("🎥 Mulai Webcam", type="primary")
-        
-        with col2:
-            stop_webcam = st.button("⏹️ Stop Webcam")
-        
-        with col3:
-            capture_frame = st.button("📸 Capture Frame")
-        
-        # Webcam placeholder
-        webcam_placeholder = st.empty()
-        prediction_placeholder = st.empty()
-        
-        # Initialize session state for webcam
-        if 'webcam_running' not in st.session_state:
-            st.session_state.webcam_running = False
-        
-        if start_webcam:
-            st.session_state.webcam_running = True
-        
-        if stop_webcam:
-            st.session_state.webcam_running = False
-        
-        # Webcam loop (simplified for demo)
-        if st.session_state.webcam_running:
-            st.info("🔴 Webcam aktif - Tunjukkan gesture bahasa isyarat Anda!")
-            
-            # Note: Real webcam implementation would require additional setup
-            # This is a placeholder for the webcam functionality
-            webcam_placeholder.info("""
-            📹 **Webcam Real-time Mode**
-            
-            Untuk implementasi webcam real-time, jalankan script berikut di terminal:
-            
-            ```bash
-            cd python
-            python webcam.py
-            ```
-            
-            Atau gunakan mode upload gambar di tab sebelumnya untuk testing.
-            """)
-    else:
-        st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
+    st.header("📸 Ambil Gambar dari Webcam")
+
+    img_file = st.camera_input("Ambil gambar dengan webcam")
+    if img_file is not None:
+        image = Image.open(img_file)
+        st.image(image, caption="Gambar dari Webcam")
+
+        if st.session_state.get('model_loaded', False):
+            # Ekstraksi fitur pakai detector
+            landmarks, results = detector.extract_landmarks(image)
+
+            if landmarks is not None:
+                # Gambarkan landmarks
+                image_with_landmarks = np.array(image.copy())
+                image_with_landmarks = detector.draw_landmarks(image_with_landmarks, results)
+                st.image(image_with_landmarks, caption="Landmarks", use_column_width=True)
+
+                # Prediksi
+                prediction, confidence = detector.predict_sign(landmarks)
+                if prediction:
+                    st.success(f"Prediksi: {prediction} (Confidence: {confidence:.2f})")
+                else:
+                    st.error("❌ Gagal melakukan prediksi")
+            else:
+                st.warning("Tidak ada tangan terdeteksi")
+        else:
+            st.warning("⚠️ Silakan load model dulu di sidebar")
+
 
 # Tab 3: Model Information
 with tab3:
