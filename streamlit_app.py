@@ -370,33 +370,45 @@ with tab2:
         class SignLanguageTransformer(VideoTransformerBase):
             def __init__(self):
                 self.detector = detector
+                self.last_frame = None
+                self.last_prediction = None
 
             def transform(self, frame):
                 img = frame.to_ndarray(format="bgr24")
-                
-                # Ekstraksi landmarks
+                self.last_frame = img.copy()
+
                 landmarks, results = self.detector.extract_landmarks(img)
                 if landmarks is not None:
                     prediction, confidence = self.detector.predict_sign(landmarks)
-                    
-                    # Tambahkan teks prediksi ke frame
+                    self.last_prediction = (prediction, confidence)
+
                     cv2.putText(img, f"{prediction} ({confidence:.2f})",
                                 (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                 (0, 255, 0), 2)
-
-                    # Gambarkan landmarks
                     img = self.detector.draw_landmarks(img, results)
 
                 return img
 
-        webrtc_streamer(
+        ctx = webrtc_streamer(
             key="sibi-realtime",
             video_transformer_factory=SignLanguageTransformer,
-            media_stream_constraints={"video": True, "audio": False}
+            media_stream_constraints={"video": True, "audio": False},
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
         )
+
+        # tombol capture
+        if ctx.video_transformer:
+            if st.button("📸 Capture Frame"):
+                if ctx.video_transformer.last_frame is not None:
+                    st.image(ctx.video_transformer.last_frame, caption="Captured Frame")
+
+                    if ctx.video_transformer.last_prediction:
+                        pred, conf = ctx.video_transformer.last_prediction
+                        st.success(f"Prediksi: {pred} (Confidence: {conf:.2f})")
 
     else:
         st.warning("⚠️ Silakan load model dulu di sidebar")
+
 
 
 # Tab 3: Model Information
