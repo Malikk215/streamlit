@@ -9,6 +9,7 @@ import os
 import json
 from pathlib import Path
 import time
+import pandas as pd  # Tambahkan ini
 
 # Configure page
 st.set_page_config(
@@ -83,7 +84,7 @@ class SignLanguageDetector:
             return False
     
     def extract_landmarks(self, image):
-        """Extract hand landmarks from image"""
+        """Extract hand landmarks from image with enhanced features"""
         try:
             # Convert PIL to OpenCV format
             if isinstance(image, Image.Image):
@@ -104,18 +105,76 @@ class SignLanguageDetector:
             if results.multi_hand_landmarks:
                 hand_landmarks = results.multi_hand_landmarks[0]
                 
-                # Extract coordinates
+                # Extract basic landmarks (x, y, z) - 63 features
                 landmarks = []
                 for landmark in hand_landmarks.landmark:
-                    landmarks.extend([landmark.x, landmark.y])
+                    landmarks.extend([landmark.x, landmark.y, landmark.z])
                 
-                return np.array(landmarks), results
+                # Calculate enhanced features - 18 features
+                enhanced_features = self.calculate_enhanced_features(hand_landmarks)
+                
+                # Combine all features (63 + 18 = 81)
+                all_features = landmarks + enhanced_features
+                
+                return np.array(all_features), results
             
             return None, None
         
         except Exception as e:
             st.error(f"Error extracting landmarks: {e}")
             return None, None
+    
+    def calculate_enhanced_features(self, hand_landmarks):
+        """Calculate additional geometric and spatial features"""
+        landmarks = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
+        features = []
+        
+        # Key points mapping
+        key_points = {
+            'wrist': 0, 'thumb_tip': 4, 'index_tip': 8, 'middle_tip': 12,
+            'ring_tip': 16, 'pinky_tip': 20, 'thumb_mcp': 2, 'index_mcp': 5,
+            'middle_mcp': 9, 'ring_mcp': 13, 'pinky_mcp': 17
+        }
+        
+        # 1. Distance from wrist to fingertips (5 features)
+        wrist = landmarks[key_points['wrist']]
+        for tip_name, tip_idx in [('thumb_tip', 4), ('index_tip', 8), ('middle_tip', 12), ('ring_tip', 16), ('pinky_tip', 20)]:
+            tip = landmarks[tip_idx]
+            distance = np.sqrt((tip[0] - wrist[0])**2 + (tip[1] - wrist[1])**2 + (tip[2] - wrist[2])**2)
+            features.append(distance)
+        
+        # 2. Angle between thumb and index finger (1 feature)
+        thumb_vec = np.array(landmarks[4]) - np.array(landmarks[2])
+        index_vec = np.array(landmarks[8]) - np.array(landmarks[5])
+        cos_angle = np.dot(thumb_vec, index_vec) / (np.linalg.norm(thumb_vec) * np.linalg.norm(index_vec) + 1e-8)
+        angle = np.arccos(np.clip(cos_angle, -1, 1))
+        features.append(angle)
+        
+        # 3. Extension ratios for each finger (5 features)
+        for finger_tips, finger_pips in [(4, 3), (8, 6), (12, 10), (16, 14), (20, 18)]:
+            tip = landmarks[finger_tips]
+            pip = landmarks[finger_pips]
+            mcp_idx = finger_tips - 2 if finger_tips == 4 else finger_tips - 3
+            mcp = landmarks[mcp_idx]
+            
+            tip_to_mcp = np.linalg.norm(np.array(tip) - np.array(mcp))
+            pip_to_mcp = np.linalg.norm(np.array(pip) - np.array(mcp))
+            extension_ratio = tip_to_mcp / (pip_to_mcp + 1e-8)
+            features.append(extension_ratio)
+        
+        # 4. Hand orientation vector (3 features)
+        orientation_vec = np.array(landmarks[9]) - np.array(landmarks[0])
+        features.extend(orientation_vec)
+        
+        # 5. Finger spread distances (4 features)
+        fingertips = [4, 8, 12, 16, 20]
+        for i in range(len(fingertips) - 1):
+            tip1 = landmarks[fingertips[i]]
+            tip2 = landmarks[fingertips[i + 1]]
+            spread = np.linalg.norm(np.array(tip1) - np.array(tip2))
+            features.append(spread)
+        
+        return features
     
     def predict_sign(self, landmarks):
         """Predict sign from landmarks"""
@@ -273,8 +332,26 @@ with tab1:
                         # Show landmark coordinates
                         with st.expander("📍 Detail Landmarks"):
                             st.write(f"Jumlah landmarks: {len(landmarks)}")
-                            landmarks_df = np.array(landmarks).reshape(-1, 2)
+                            
+                            # Pisahkan basic landmarks (63) dan enhanced features (18)
+                            basic_landmarks = landmarks[:63]  # 21 landmarks × 3 koordinat (x,y,z)
+                            enhanced_features = landmarks[63:]  # 18 enhanced features
+                            
+                            # Tampilkan basic landmarks dalam format (x, y, z)
+                            st.subheader("🖐️ Basic Hand Landmarks (21 points)")
+                            landmarks_xyz = np.array(basic_landmarks).reshape(-1, 3)
+                            landmarks_df = pd.DataFrame(landmarks_xyz, 
+                                                      columns=['X', 'Y', 'Z'],
+                                                      index=[f'Point_{i}' for i in range(21)])
                             st.dataframe(landmarks_df, use_container_width=True)
+                            
+                            # Tampilkan enhanced features
+                            st.subheader("✨ Enhanced Features (18 features)")
+                            enhanced_df = pd.DataFrame({
+                                'Feature': [f'Enhanced_{i}' for i in range(18)],
+                                'Value': enhanced_features
+                            })
+                            st.dataframe(enhanced_df, use_container_width=True)
                     else:
                         st.error("❌ Gagal melakukan prediksi")
                 else:
