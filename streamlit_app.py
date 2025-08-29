@@ -56,7 +56,7 @@ class SignLanguageDetector:
     def __init__(self):
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(
-            static_image_mode=True,
+            static_image_mode=False,
             max_num_hands=1,
             min_detection_confidence=0.3,  # Lebih rendah untuk deteksi yang lebih sensitif
             min_tracking_confidence=0.3    # Lebih rendah
