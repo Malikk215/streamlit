@@ -368,16 +368,36 @@ with tab2:
     img_file = st.camera_input("Ambil gambar dengan webcam")
     if img_file is not None:
         from PIL import Image
-        image = Image.open(img_file)
+        import numpy as np
+        import cv2
+        import mediapipe as mp
+        import pickle
 
-        # tampilkan hasil capture
+        image = Image.open(img_file)
         st.image(image, caption="Gambar dari Webcam")
 
-        # di sini kamu bisa lanjutkan proses hand sign recognition
-        # misalnya konversi ke array, ekstrak fitur, lalu prediksi model
-        # contoh dummy:
-        # result = model.predict(preprocess(image))
-        # st.success(f"Prediksi: {result}")
+        # load model
+        model = pickle.load(open("model/sign_model.pkl", "rb"))
+
+        # proses dengan mediapipe
+        mp_hands = mp.solutions.hands
+        hands = mp_hands.Hands(static_image_mode=True, max_num_hands=1)
+        img_rgb = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        results = hands.process(img_rgb)
+
+        if results.multi_hand_landmarks:
+            for hand_landmarks in results.multi_hand_landmarks:
+                data = []
+                for lm in hand_landmarks.landmark:
+                    data.append(lm.x)
+                    data.append(lm.y)
+                data = np.array(data).reshape(1, -1)
+
+                # prediksi
+                prediction = model.predict(data)
+                st.success(f"Prediksi: {prediction[0]}")
+        else:
+            st.warning("Tidak ada tangan terdeteksi")
 
 
 # Tab 3: Model Information
