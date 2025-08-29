@@ -362,7 +362,6 @@ with tab1:
                 st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
 
 # Tab 2: Webcam Real-time
-# Tab 2: Webcam Real-time
 with tab2:
     st.header("📸 Ambil Gambar dari Webcam")
 
@@ -459,5 +458,3 @@ st.markdown("""
     <p>Dibuat dengan ❤️ menggunakan Streamlit dan MediaPipe</p>
 </div>
 """, unsafe_allow_html=True)
-
-oke sekarang sudah aman semua nya, tapi kira kira bisa ga sih saya realisasikan realtime recognition?
