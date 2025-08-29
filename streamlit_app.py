@@ -362,42 +362,35 @@ with tab1:
                 st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
 
 # Tab 2: Webcam Real-time
+# Tab 2: Webcam Real-time
 with tab2:
     st.header("📸 Ambil Gambar dari Webcam")
 
     img_file = st.camera_input("Ambil gambar dengan webcam")
     if img_file is not None:
-        from PIL import Image
-        import numpy as np
-        import cv2
-        import mediapipe as mp
-
         image = Image.open(img_file)
         st.image(image, caption="Gambar dari Webcam")
 
-        # Gunakan model yang dipilih dari sidebar
-        # (sudah di-load di bagian atas script)
-        # variabel: model
+        if st.session_state.get('model_loaded', False):
+            # Ekstraksi fitur pakai detector
+            landmarks, results = detector.extract_landmarks(image)
 
-        # proses dengan mediapipe
-        mp_hands = mp.solutions.hands
-        hands = mp_hands.Hands(static_image_mode=True, max_num_hands=1)
-        img_rgb = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        results = hands.process(img_rgb)
+            if landmarks is not None:
+                # Gambarkan landmarks
+                image_with_landmarks = np.array(image.copy())
+                image_with_landmarks = detector.draw_landmarks(image_with_landmarks, results)
+                st.image(image_with_landmarks, caption="Landmarks", use_column_width=True)
 
-        if results.multi_hand_landmarks:
-            for hand_landmarks in results.multi_hand_landmarks:
-                data = []
-                for lm in hand_landmarks.landmark:
-                    data.append(lm.x)
-                    data.append(lm.y)
-                data = np.array(data).reshape(1, -1)
-
-                # prediksi
-                prediction = model.predict(data)
-                st.success(f"Prediksi: {prediction[0]}")
+                # Prediksi
+                prediction, confidence = detector.predict_sign(landmarks)
+                if prediction:
+                    st.success(f"Prediksi: {prediction} (Confidence: {confidence:.2f})")
+                else:
+                    st.error("❌ Gagal melakukan prediksi")
+            else:
+                st.warning("Tidak ada tangan terdeteksi")
         else:
-            st.warning("Tidak ada tangan terdeteksi")
+            st.warning("⚠️ Silakan load model dulu di sidebar")
 
 
 # Tab 3: Model Information
