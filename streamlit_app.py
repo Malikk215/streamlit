@@ -362,35 +362,41 @@ with tab1:
                 st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
 
 # Tab 2: Webcam Real-time
-# Tab 2: Webcam Real-time
 with tab2:
-    st.header("📸 Ambil Gambar dari Webcam")
+    st.header("📹 Webcam Real-time")
 
-    img_file = st.camera_input("Ambil gambar dengan webcam")
-    if img_file is not None:
-        image = Image.open(img_file)
-        st.image(image, caption="Gambar dari Webcam")
+    if st.session_state.get('model_loaded', False):
 
-        if st.session_state.get('model_loaded', False):
-            # Ekstraksi fitur pakai detector
-            landmarks, results = detector.extract_landmarks(image)
+        class SignLanguageTransformer(VideoTransformerBase):
+            def __init__(self):
+                self.detector = detector
 
-            if landmarks is not None:
-                # Gambarkan landmarks
-                image_with_landmarks = np.array(image.copy())
-                image_with_landmarks = detector.draw_landmarks(image_with_landmarks, results)
-                st.image(image_with_landmarks, caption="Landmarks", use_column_width=True)
+            def transform(self, frame):
+                img = frame.to_ndarray(format="bgr24")
+                
+                # Ekstraksi landmarks
+                landmarks, results = self.detector.extract_landmarks(img)
+                if landmarks is not None:
+                    prediction, confidence = self.detector.predict_sign(landmarks)
+                    
+                    # Tambahkan teks prediksi ke frame
+                    cv2.putText(img, f"{prediction} ({confidence:.2f})",
+                                (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 255, 0), 2)
 
-                # Prediksi
-                prediction, confidence = detector.predict_sign(landmarks)
-                if prediction:
-                    st.success(f"Prediksi: {prediction} (Confidence: {confidence:.2f})")
-                else:
-                    st.error("❌ Gagal melakukan prediksi")
-            else:
-                st.warning("Tidak ada tangan terdeteksi")
-        else:
-            st.warning("⚠️ Silakan load model dulu di sidebar")
+                    # Gambarkan landmarks
+                    img = self.detector.draw_landmarks(img, results)
+
+                return img
+
+        webrtc_streamer(
+            key="sibi-realtime",
+            video_transformer_factory=SignLanguageTransformer,
+            media_stream_constraints={"video": True, "audio": False}
+        )
+
+    else:
+        st.warning("⚠️ Silakan load model dulu di sidebar")
 
 
 # Tab 3: Model Information
