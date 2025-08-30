@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 import streamlit as st
 import cv2
 import numpy as np
@@ -12,6 +15,7 @@ import time
 import pandas as pd
 import av
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+from io import BytesIO
 
 # Configure page
 st.set_page_config(
@@ -367,29 +371,23 @@ with tab2:
 
     img_file = st.camera_input("Ambil gambar dengan webcam")
     if img_file is not None:
-        image = Image.open(img_file)
+        image = Image.open(BytesIO(img_file.getvalue()))
         st.image(image, caption="Gambar dari Webcam")
 
         if st.session_state.get('model_loaded', False):
-            # Ekstraksi fitur pakai detector
             landmarks, results = detector.extract_landmarks(image)
-
             if landmarks is not None:
-                # Gambarkan landmarks
                 image_with_landmarks = np.array(image.copy())
                 image_with_landmarks = detector.draw_landmarks(image_with_landmarks, results)
                 st.image(image_with_landmarks, caption="Landmarks", use_column_width=True)
 
-                # Prediksi
                 prediction, confidence = detector.predict_sign(landmarks)
-                if prediction:
-                    st.success(f"Prediksi: {prediction} (Confidence: {confidence:.2f})")
-                else:
-                    st.error("❌ Gagal melakukan prediksi")
+                st.success(f"Prediksi: {prediction} (Confidence: {confidence:.2f})")
             else:
                 st.warning("Tidak ada tangan terdeteksi")
         else:
             st.warning("⚠️ Silakan load model dulu di sidebar")
+
 
 
 # Tab 3: Model Information
