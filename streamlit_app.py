@@ -414,15 +414,23 @@ with tab3:
         
         with col2:
             st.subheader("🔤 Label yang Didukung")
-            
-            # Display supported letters in a grid
+
+            # Folder gambar referensi
+            image_folder = "reference_images"
+
+            # Display supported letters as buttons in a grid
             letters_per_row = 6
-            for i in range(0, len(detector.labels), letters_per_row):
-                cols = st.columns(letters_per_row)
-                for j, letter in enumerate(detector.labels[i:i+letters_per_row]):
-                    with cols[j]:
-                        st.markdown(f"<div style='text-align: center; font-size: 1.5rem; font-weight: bold; padding: 0.5rem; background-color: #f0f2f6; border-radius: 5px; margin: 0.2rem;'>{letter}</div>", unsafe_allow_html=True)
-        
+                for i in range(0, len(detector.labels), letters_per_row):
+                    cols = st.columns(letters_per_row)
+                    for j, letter in enumerate(detector.labels[i:i+letters_per_row]):
+                        with cols[j]:
+                            if st.button(letter, key=f"btn_{letter}"):
+                                image_path = os.path.join(image_folder, f"{letter}.jpg")
+                                if os.path.exists(image_path):
+                                    st.image(image_path, caption=f"Contoh Gesture Huruf {letter}", use_column_width=True)
+                                else:
+                                    st.warning(f"Gambar untuk huruf {letter} tidak ditemukan")
+
         # Model performance info
         st.subheader("📈 Performa Model")
         
