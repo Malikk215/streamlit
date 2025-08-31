@@ -244,7 +244,6 @@ detector = get_detector()
 # Sidebar for model selection
 st.sidebar.title("⚙️ Pengaturan Model")
 
-# Model selection
 model_files = [
     "improved_model_svm_0.999.p",
     "improved_model_svm_0.997.p", 
@@ -258,10 +257,8 @@ selected_model = st.sidebar.selectbox(
     index=0
 )
 
-# Ganti baris 194
-model_path = selected_model  # Hapus path absolut yang panjang
+model_path = selected_model
 
-# Load model
 if st.sidebar.button("🔄 Load Model") or 'model_loaded' not in st.session_state:
     if os.path.exists(model_path):
         if detector.load_model(model_path):
@@ -274,11 +271,62 @@ if st.sidebar.button("🔄 Load Model") or 'model_loaded' not in st.session_stat
         st.sidebar.error(f"❌ File model tidak ditemukan: {selected_model}")
         st.session_state.model_loaded = False
 
-# Main title
+st.sidebar.markdown("---")
+st.sidebar.subheader("📊 Informasi Model")
+
+if st.session_state.get('model_loaded', False):
+    st.sidebar.info(f"**File:** {selected_model}")
+    st.sidebar.info(f"**Path:** {model_path}")
+    
+    if detector.model:
+        model_type = type(detector.model).__name__
+        st.sidebar.info(f"**Tipe Model:** {model_type}")
+    
+    if detector.scaler:
+        scaler_type = type(detector.scaler).__name__
+        st.sidebar.info(f"**Scaler:** {scaler_type}")
+    
+    st.sidebar.markdown("**📈 Performa Model**")
+    performance_data = {
+        "improved_model_svm_0.999.p": {"accuracy": "99.9%", "type": "SVM", "features": "81 landmarks"},
+        "improved_model_svm_0.997.p": {"accuracy": "99.7%", "type": "SVM", "features": "81 landmarks"},
+        "ensemble_model_acc_0.920.p": {"accuracy": "92.0%", "type": "Ensemble", "features": "81 landmarks"},
+        "model_improved.p": {"accuracy": "N/A", "type": "Unknown", "features": "81 landmarks"}
+    }
+    
+    if selected_model in performance_data:
+        perf = performance_data[selected_model]
+        st.sidebar.metric("Akurasi", perf["accuracy"])
+        st.sidebar.metric("Tipe Model", perf["type"])
+        st.sidebar.metric("Jumlah Fitur", perf["features"])
+    
+    st.sidebar.markdown("**🔤 Label yang Didukung**")
+    image_folder = "reference_images"
+    
+    letters_per_row = 3
+    for i in range(0, len(detector.labels), letters_per_row):
+        cols = st.sidebar.columns(letters_per_row)
+        for j, letter in enumerate(detector.labels[i:i+letters_per_row]):
+            with cols[j]:
+                if st.button(letter, key=f"sidebar_btn_{letter}"):
+                    image_path = os.path.join(image_folder, f"{letter}.jpg")
+                    if os.path.exists(image_path):
+                        st.sidebar.image(
+                            image_path,
+                            caption=f"Gesture {letter}",
+                            use_column_width=True
+                        )
+                    else:
+                        st.sidebar.warning(f"Gambar {letter} tidak ditemukan")
+else:
+    st.sidebar.warning("⚠️ Silakan load model terlebih dahulu")
+    st.sidebar.subheader("📋 Model yang Tersedia")
+    for model_file in model_files:
+        st.sidebar.write(f"• {model_file}")
+
 st.markdown('<h1 class="main-header">🤟 Deteksi Bahasa Isyarat SIBI</h1>', unsafe_allow_html=True)
 
-# Tabs for different modes
-tab1, tab2, tab3 = st.tabs(["📷 Upload Gambar", "📹 Webcam Real-time", "📊 Informasi Model"])
+tab1, tab2 = st.tabs(["📷 Upload Gambar", "📹 Webcam Real-time"])
 
 # Tab 1: Image Upload
 with tab1:
@@ -468,7 +516,7 @@ with tab3:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666;'>
-    <p>🤟 Aplikasi Deteksi Bahasa Isyarat SIBI</p>
+    <p>Aplikasi Deteksi Bahasa Isyarat SIBI</p>
     <p>Dibuat menggunakan Streamlit dan MediaPipe</p>
 </div>
 """, unsafe_allow_html=True)
