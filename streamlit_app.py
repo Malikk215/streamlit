@@ -15,9 +15,8 @@ import time
 import pandas as pd
 import av
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
-import plotly.express as px
-import plotly.graph_objects as go
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 st.set_page_config(
     page_title="Deteksi Bahasa Isyarat SIBI",
@@ -368,24 +367,20 @@ class SignLanguageDetector:
         letters = [p['letter'] for p in recent_predictions]
         confidences = [p['confidence'] for p in recent_predictions]
         
-        fig = go.Figure(data=[
-            go.Bar(
-                x=letters,
-                y=confidences,
-                marker_color=px.colors.sequential.Viridis,
-                text=[f"{c:.1%}" for c in confidences],
-                textposition='auto'
-            )
-        ])
+        fig, ax = plt.subplots(figsize=(10, 6))
+        bars = ax.bar(letters, confidences, color=['#667eea', '#764ba2', '#4facfe', '#00f2fe', '#f093fb'])
         
-        fig.update_layout(
-            title="Confidence Score History",
-            xaxis_title="Predicted Letters",
-            yaxis_title="Confidence",
-            template="plotly_white",
-            height=400
-        )
+        ax.set_title('Confidence Score History', fontsize=16, fontweight='bold')
+        ax.set_xlabel('Predicted Letters', fontsize=12)
+        ax.set_ylabel('Confidence', fontsize=12)
+        ax.set_ylim(0, 1)
         
+        for bar, conf in zip(bars, confidences):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                   f'{conf:.1%}', ha='center', va='bottom', fontweight='bold')
+        
+        plt.tight_layout()
         return fig
 
 @st.cache_resource
@@ -619,7 +614,7 @@ with tab1:
                                 
                                 confidence_chart = detector.get_confidence_chart()
                                 if confidence_chart:
-                                    st.plotly_chart(confidence_chart, use_container_width=True)
+                                    st.pyplot(confidence_chart)
                         else:
                             st.error("❌ Prediction failed")
                     else:
@@ -723,11 +718,31 @@ with tab2:
     
     st.markdown('</div>', unsafe_allow_html=True)
 
+if detector.prediction_history:
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; margin: 2rem 0;">
+        <h2 style="color: #667eea;">📈 Prediction History</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    recent_predictions = detector.prediction_history[-5:]
+    cols = st.columns(len(recent_predictions))
+    
+    for i, (col, pred) in enumerate(zip(cols, recent_predictions)):
+        with col:
+            st.markdown(f"""
+            <div class="history-card">
+                <h3>{pred['letter']}</h3>
+                <p>{pred['confidence']:.1%}</p>
+                <small>{pred['timestamp'].strftime('%H:%M:%S')}</small>
+            </div>
+            """, unsafe_allow_html=True)
+
 st.markdown("---")
 st.markdown("""
 <div class="footer">
     <h2>🤟 SIBI Sign Language Detection System</h2>
     <p>🚀 Powered by Streamlit • 🤖 MediaPipe • 🧠 Machine Learning</p>
-    <p>✨ Built with ❤️ for accessibility and communication</p>
 </div>
 """, unsafe_allow_html=True)
