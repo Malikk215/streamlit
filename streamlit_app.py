@@ -469,6 +469,6 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666;'>
     <p>🤟 Aplikasi Deteksi Bahasa Isyarat SIBI</p>
-    <p>Dibuat dengan ❤️ menggunakan Streamlit dan MediaPipe</p>
+    <p>Dibuat menggunakan Streamlit dan MediaPipe</p>
 </div>
 """, unsafe_allow_html=True)
