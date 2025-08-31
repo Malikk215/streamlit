@@ -326,7 +326,7 @@ else:
 
 st.markdown('<h1 class="main-header">🤟 Deteksi Bahasa Isyarat SIBI</h1>', unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["📷 Upload Gambar", "📹 Webcam Real-time", "📊 Informasi Model"])
+tab1, tab2 = st.tabs(["📷 Upload Gambar", "📹 Webcam Real-time"])
 
 # Tab 1: Image Upload
 with tab1:
@@ -422,16 +422,13 @@ with tab2:
         st.image(image, caption="Gambar dari Webcam")
 
         if st.session_state.get('model_loaded', False):
-            # Ekstraksi fitur pakai detector
             landmarks, results = detector.extract_landmarks(image)
 
             if landmarks is not None:
-                # Gambarkan landmarks
                 image_with_landmarks = np.array(image.copy())
                 image_with_landmarks = detector.draw_landmarks(image_with_landmarks, results)
                 st.image(image_with_landmarks, caption="Landmarks", use_column_width=True)
 
-                # Prediksi
                 prediction, confidence = detector.predict_sign(landmarks)
                 if prediction:
                     st.success(f"Prediksi: {prediction} (Confidence: {confidence:.2f})")
@@ -442,81 +439,10 @@ with tab2:
         else:
             st.warning("⚠️ Silakan load model dulu di sidebar")
 
-
-# Tab 3: Model Information
-with tab3:
-    st.header("📊 Informasi Model")
-
-    if st.session_state.get('model_loaded', False):
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("🎯 Model yang Dimuat")
-            st.info(f"**File:** {selected_model}")
-            st.info(f"**Path:** {model_path}")
-
-            if detector.model:
-                model_type = type(detector.model).__name__
-                st.info(f"**Tipe Model:** {model_type}")
-
-            if detector.scaler:
-                scaler_type = type(detector.scaler).__name__
-                st.info(f"**Scaler:** {scaler_type}")
-
-        with col2:
-            st.subheader("🔤 Label yang Didukung")
-
-            # Folder gambar referensi
-            image_folder = "reference_images"
-
-            # Display supported letters as buttons in a grid
-            letters_per_row = 6
-            for i in range(0, len(detector.labels), letters_per_row):
-                cols = st.columns(letters_per_row)
-                for j, letter in enumerate(detector.labels[i:i+letters_per_row]):
-                    with cols[j]:
-                        if st.button(letter, key=f"btn_{letter}"):
-                            image_path = os.path.join(image_folder, f"{letter}.jpg")
-                            if os.path.exists(image_path):
-                                st.image(
-                                    image_path,
-                                    caption=f"Contoh Gesture Huruf {letter}",
-                                    use_column_width=True
-                                )
-                            else:
-                                st.warning(f"Gambar untuk huruf {letter} tidak ditemukan")
-
-        # Model performance info
-        st.subheader("📈 Performa Model")
-        performance_data = {
-            "improved_model_svm_0.999.p": {"accuracy": "99.9%", "type": "SVM", "features": "81 landmarks"},
-            "improved_model_svm_0.997.p": {"accuracy": "99.7%", "type": "SVM", "features": "81 landmarks"},
-            "ensemble_model_acc_0.920.p": {"accuracy": "92.0%", "type": "Ensemble", "features": "81 landmarks"},
-            "model_improved.p": {"accuracy": "N/A", "type": "Unknown", "features": "81 landmarks"}
-        }
-
-        if selected_model in performance_data:
-            perf = performance_data[selected_model]
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Akurasi", perf["accuracy"])
-            with col2:
-                st.metric("Tipe Model", perf["type"])
-            with col3:
-                st.metric("Jumlah Fitur", perf["features"])
-
-    else:
-        st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
-
-        st.subheader("📋 Model yang Tersedia")
-        for model_file in model_files:
-            st.write(f"• {model_file}")
-
-# Footer
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666;'>
-    <p>🤟 Aplikasi Deteksi Bahasa Isyarat SIBI</p>
+    <p>Aplikasi Deteksi Bahasa Isyarat SIBI</p>
     <p>Dibuat menggunakan Streamlit dan MediaPipe</p>
 </div>
 """, unsafe_allow_html=True)
