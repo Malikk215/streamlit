@@ -326,7 +326,7 @@ else:
 
 st.markdown('<h1 class="main-header">🤟 Deteksi Bahasa Isyarat SIBI</h1>', unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["📷 Upload Gambar", "📹 Webcam Real-time"])
+tab1, tab2, tab3 = st.tabs(["📷 Upload Gambar", "📹 Webcam Real-time", "📊 Informasi Model"])
 
 # Tab 1: Image Upload
 with tab1:
@@ -516,7 +516,7 @@ with tab3:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666;'>
-    <p>Aplikasi Deteksi Bahasa Isyarat SIBI</p>
+    <p>🤟 Aplikasi Deteksi Bahasa Isyarat SIBI</p>
     <p>Dibuat menggunakan Streamlit dan MediaPipe</p>
 </div>
 """, unsafe_allow_html=True)
