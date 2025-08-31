@@ -396,14 +396,12 @@ with tab2:
 
 
 # Tab 3: Model Information
-# Tab 3: Model Information & Kamus
 with tab3:
-    st.header("📊 Informasi Model & Kamus")
+    st.header("📊 Informasi Model")
 
     if st.session_state.get('model_loaded', False):
         col1, col2 = st.columns(2)
 
-        # --- Info Model ---
         with col1:
             st.subheader("🎯 Model yang Dimuat")
             st.info(f"**File:** {selected_model}")
@@ -420,29 +418,27 @@ with tab3:
         with col2:
             st.subheader("🔤 Label yang Didukung")
 
-            # Mapping huruf -> URL gambar dari repo GitHub (pakai raw)
-            reference_images = {
-                letter: f"https://raw.githubusercontent.com/EricoAstama/hand-sign-language/main/reference_images/{letter}.jpg"
-                for letter in detector.labels
-            }
+            # Folder gambar referensi
+            image_folder = "reference_images"
 
+            # Display supported letters as buttons in a grid
             letters_per_row = 6
             for i in range(0, len(detector.labels), letters_per_row):
                 cols = st.columns(letters_per_row)
                 for j, letter in enumerate(detector.labels[i:i+letters_per_row]):
                     with cols[j]:
                         if st.button(letter, key=f"btn_{letter}"):
-                            url = reference_images.get(letter)
-                            if url:
+                            image_path = os.path.join(image_folder, f"{letter}.jpg")
+                            if os.path.exists(image_path):
                                 st.image(
-                                    url,
+                                    image_path,
                                     caption=f"Contoh Gesture Huruf {letter}",
                                     use_column_width=True
                                 )
                             else:
-                                st.warning(f"Gambar untuk huruf {letter} tidak tersedia")
+                                st.warning(f"Gambar untuk huruf {letter} tidak ditemukan")
 
-        # --- Performance Info ---
+        # Model performance info
         st.subheader("📈 Performa Model")
         performance_data = {
             "improved_model_svm_0.999.p": {"accuracy": "99.9%", "type": "SVM", "features": "81 landmarks"},
@@ -467,3 +463,12 @@ with tab3:
         st.subheader("📋 Model yang Tersedia")
         for model_file in model_files:
             st.write(f"• {model_file}")
+
+# Footer
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: #666;'>
+    <p>🤟 Aplikasi Deteksi Bahasa Isyarat SIBI</p>
+    <p>Dibuat dengan ❤️ menggunakan Streamlit dan MediaPipe</p>
+</div>
+""", unsafe_allow_html=True)
