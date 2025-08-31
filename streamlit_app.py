@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 import streamlit as st
 import cv2
 import numpy as np
@@ -395,23 +398,23 @@ with tab2:
 # Tab 3: Model Information
 with tab3:
     st.header("📊 Informasi Model")
-    
+
     if st.session_state.get('model_loaded', False):
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.subheader("🎯 Model yang Dimuat")
             st.info(f"**File:** {selected_model}")
             st.info(f"**Path:** {model_path}")
-            
+
             if detector.model:
                 model_type = type(detector.model).__name__
                 st.info(f"**Tipe Model:** {model_type}")
-            
+
             if detector.scaler:
                 scaler_type = type(detector.scaler).__name__
                 st.info(f"**Scaler:** {scaler_type}")
-        
+
         with col2:
             st.subheader("🔤 Label yang Didukung")
 
@@ -420,30 +423,32 @@ with tab3:
 
             # Display supported letters as buttons in a grid
             letters_per_row = 6
-                for i in range(0, len(detector.labels), letters_per_row):
-                    cols = st.columns(letters_per_row)
-                    for j, letter in enumerate(detector.labels[i:i+letters_per_row]):
-                        with cols[j]:
-                            if st.button(letter, key=f"btn_{letter}"):
-                                image_path = os.path.join(image_folder, f"{letter}.jpg")
-                                if os.path.exists(image_path):
-                                    st.image(image_path, caption=f"Contoh Gesture Huruf {letter}", use_column_width=True)
-                                else:
-                                    st.warning(f"Gambar untuk huruf {letter} tidak ditemukan")
+            for i in range(0, len(detector.labels), letters_per_row):
+                cols = st.columns(letters_per_row)
+                for j, letter in enumerate(detector.labels[i:i+letters_per_row]):
+                    with cols[j]:
+                        if st.button(letter, key=f"btn_{letter}"):
+                            image_path = os.path.join(image_folder, f"{letter}.jpg")
+                            if os.path.exists(image_path):
+                                st.image(
+                                    image_path,
+                                    caption=f"Contoh Gesture Huruf {letter}",
+                                    use_column_width=True
+                                )
+                            else:
+                                st.warning(f"Gambar untuk huruf {letter} tidak ditemukan")
 
         # Model performance info
         st.subheader("📈 Performa Model")
-        
         performance_data = {
             "improved_model_svm_0.999.p": {"accuracy": "99.9%", "type": "SVM", "features": "81 landmarks"},
             "improved_model_svm_0.997.p": {"accuracy": "99.7%", "type": "SVM", "features": "81 landmarks"},
             "ensemble_model_acc_0.920.p": {"accuracy": "92.0%", "type": "Ensemble", "features": "81 landmarks"},
             "model_improved.p": {"accuracy": "N/A", "type": "Unknown", "features": "81 landmarks"}
         }
-        
+
         if selected_model in performance_data:
             perf = performance_data[selected_model]
-            
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Akurasi", perf["accuracy"])
@@ -451,9 +456,10 @@ with tab3:
                 st.metric("Tipe Model", perf["type"])
             with col3:
                 st.metric("Jumlah Fitur", perf["features"])
+
     else:
         st.warning("⚠️ Silakan load model terlebih dahulu di sidebar")
-        
+
         st.subheader("📋 Model yang Tersedia")
         for model_file in model_files:
             st.write(f"• {model_file}")
