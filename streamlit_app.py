@@ -370,9 +370,9 @@ class SignLanguageDetector:
         fig, ax = plt.subplots(figsize=(10, 6))
         bars = ax.bar(letters, confidences, color=['#667eea', '#764ba2', '#4facfe', '#00f2fe', '#f093fb'])
         
-        ax.set_title('Confidence Score History', fontsize=16, fontweight='bold')
+        ax.set_title('Tingkat Keyakinan Score History', fontsize=16, fontweight='bold')
         ax.set_xlabel('Predicted Letters', fontsize=12)
-        ax.set_ylabel('Confidence', fontsize=12)
+        ax.set_ylabel('Tingkat Keyakinan', fontsize=12)
         ax.set_ylim(0, 1)
         
         for bar, conf in zip(bars, confidences):
@@ -391,7 +391,7 @@ detector = get_detector()
 
 st.sidebar.markdown("""
 <div class="sidebar-model-card">
-    <h2 style="text-align: center; margin: 0;">⚙️ Model Control</h2>
+    <h2 style="text-align: center; margin: 0;">⚙️ Kontrol Model</h2>
 </div>
 """, unsafe_allow_html=True)
 
@@ -410,20 +410,20 @@ selected_model = st.sidebar.selectbox(
 
 model_path = selected_model
 
-if st.sidebar.button("🚀 Load Model", use_container_width=True) or 'model_loaded' not in st.session_state:
+if st.sidebar.button("🚀 Muat Model", use_container_width=True) or 'model_loaded' not in st.session_state:
     with st.sidebar:
-        with st.spinner("Loading model..."):
+        with st.spinner("Memuat model..."):
             time.sleep(1)
             if os.path.exists(model_path):
                 if detector.load_model(model_path):
-                    st.success("✅ Model loaded successfully!")
+                    st.success("✅ Model berhasil dimuat!")
                     st.balloons()
                     st.session_state.model_loaded = True
                 else:
-                    st.error("❌ Failed to load model")
+                    st.error("❌ Gagal memuat model")
                     st.session_state.model_loaded = False
             else:
-                st.error(f"❌ Model file not found: {selected_model}")
+                st.error(f"❌ File model tidak ditemukan: {selected_model}")
                 st.session_state.model_loaded = False
 
 st.sidebar.markdown("---")
@@ -431,7 +431,7 @@ st.sidebar.markdown("---")
 if st.session_state.get('model_loaded', False):
     st.sidebar.markdown("""
     <div class="metric-card">
-        <h3>📊 Model Information</h3>
+        <h3>📊 Informasi Model</h3>
     </div>
     """, unsafe_allow_html=True)
     
@@ -440,11 +440,11 @@ if st.session_state.get('model_loaded', False):
     
     if detector.model:
         model_type = type(detector.model).__name__
-        st.sidebar.info(f"**🤖 Type:** {model_type}")
+        st.sidebar.info(f"**🤖 Jenis:** {model_type}")
     
     if detector.scaler:
         scaler_type = type(detector.scaler).__name__
-        st.sidebar.info(f"**⚖️ Scaler:** {scaler_type}")
+        st.sidebar.info(f"**⚖️ Skala:** {scaler_type}")
     
     performance_data = {
         "improved_model_svm_0.999.p": {"accuracy": "99.9%", "type": "SVM", "features": "81"},
@@ -457,15 +457,15 @@ if st.session_state.get('model_loaded', False):
         perf = performance_data[selected_model]
         col1, col2, col3 = st.sidebar.columns(3)
         with col1:
-            st.metric("🎯 Accuracy", perf["accuracy"])
+            st.metric("🎯 Akurasi", perf["accuracy"])
         with col2:
-            st.metric("🔧 Type", perf["type"])
+            st.metric("🔧 Jenis", perf["type"])
         with col3:
-            st.metric("📊 Features", perf["features"])
+            st.metric("📊 Fitur", perf["features"])
     
     st.sidebar.markdown("""
     <div class="metric-card">
-        <h3>🔤 Supported Letters</h3>
+        <h3>🔤 Huruf yang Didukung</h3>
     </div>
     """, unsafe_allow_html=True)
     
@@ -489,33 +489,33 @@ if st.session_state.get('model_loaded', False):
 else:
     st.sidebar.markdown("""
     <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border-radius: 15px; color: white;">
-        <h3>⚠️ Please Load Model First</h3>
-        <p>Select and load a model to start detection</p>
+        <h3>⚠️ Please Muat Model First</h3>
+        <p>Pilih dan muat model untuk memulai deteksi</p>
     </div>
     """, unsafe_allow_html=True)
     
-    st.sidebar.subheader("📋 Available Models")
+    st.sidebar.subheader("📋 Model yang Tersedia")
     for model_file in model_files:
         st.sidebar.write(f"• {model_file}")
 
-st.markdown('<h1 class="main-header">🤟 SIBI Sign Language Detection</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🤟 Sistem Deteksi Bahasa Isyarat SIBI</h1>', unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["📷 Image Upload", "📹 Live Camera"])
+tab1, tab2 = st.tabs(["📷 Unggah Gambar", "📹 Kamera Langsung"])
 
 with tab1:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     
     st.markdown("""
     <div style="text-align: center; margin-bottom: 2rem;">
-        <h2 style="color: #667eea;">📸 Upload Your Sign Language Image</h2>
-        <p style="font-size: 1.1rem; color: #666;">Upload an image showing SIBI sign language gesture</p>
+        <h2 style="color: #667eea;">📸 Unggah Gambar Bahasa Isyarat</h2>
+        <p style="font-size: 1.1rem; color: #666;">Unggah gambar yang menunjukkan gestur bahasa isyarat SIBI</p>
     </div>
     """, unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader(
-        "Choose an image file",
+        "Pilih file gambar",
         type=['png', 'jpg', 'jpeg'],
-        help="Upload an image showing SIBI sign language gesture",
+        help="Unggah gambar yang menunjukkan gestur bahasa isyarat SIBI",
         label_visibility="collapsed"
     )
     
@@ -527,20 +527,20 @@ with tab1:
         with col1:
             st.markdown("""
             <div style="text-align: center; margin-bottom: 1rem;">
-                <h3 style="color: #667eea;">🖼️ Original Image</h3>
+                <h3 style="color: #667eea;">🖼️ Gambar Asli</h3>
             </div>
             """, unsafe_allow_html=True)
-            st.image(image, caption="Uploaded Image", use_column_width=True)
+            st.image(image, caption="Gambar yang Diupload", use_column_width=True)
         
         with col2:
             st.markdown("""
             <div style="text-align: center; margin-bottom: 1rem;">
-                <h3 style="color: #667eea;">🔍 Detection Results</h3>
+                <h3 style="color: #667eea;">🔍 Hasil Deteksi</h3>
             </div>
             """, unsafe_allow_html=True)
             
             if st.session_state.get('model_loaded', False):
-                with st.spinner("Analyzing image..."):
+                with st.spinner("Menganalisis gambar..."):
                     progress_bar = st.progress(0)
                     for i in range(100):
                         time.sleep(0.01)
@@ -552,7 +552,7 @@ with tab1:
                         image_with_landmarks = np.array(image.copy())
                         image_with_landmarks = detector.draw_landmarks(image_with_landmarks, results)
                         
-                        st.image(image_with_landmarks, caption="Image with Landmarks", use_column_width=True)
+                        st.image(image_with_landmarks, caption="Gambar dengan Titik Landmark", use_column_width=True)
                         
                         prediction, confidence = detector.predict_sign(landmarks)
                         
@@ -569,24 +569,24 @@ with tab1:
                             
                             st.markdown(f"""
                             <div class="prediction-box success-animation">
-                                <h3 style="color: white; margin: 0;">🎯 Prediction Result</h3>
+                                <h3 style="color: white; margin: 0;">🎯 Hasil Prediksi</h3>
                                 <div class="prediction-letter">{prediction}</div>
-                                <p class="{conf_class}">{conf_emoji} Confidence: {confidence:.1%}</p>
+                                <p class="{conf_class}">{conf_emoji} Tingkat Keyakinan: {confidence:.1%}</p>
                             </div>
                             """, unsafe_allow_html=True)
                             
-                            st.success(f"Detected: {prediction} with {confidence:.1%} confidence")
+                            st.success(f"Terdeteksi: {prediction} with {confidence:.1%} confidence")
                             
                             if confidence > 0.9:
                                 st.balloons()
                             
-                            with st.expander("📊 Detailed Analysis", expanded=False):
+                            with st.expander("📊 Analisis Detail", expanded=False):
                                 col_a, col_b = st.columns(2)
                                 
                                 with col_a:
                                     st.markdown("""
                                     <div class="landmark-visualization">
-                                        <h4>🖐️ Hand Landmarks</h4>
+                                        <h4>🖐️ Titik Landmark Tangan</h4>
                                     </div>
                                     """, unsafe_allow_html=True)
                                     
@@ -602,7 +602,7 @@ with tab1:
                                 with col_b:
                                     st.markdown("""
                                     <div class="landmark-visualization">
-                                        <h4>✨ Enhanced Features</h4>
+                                        <h4>✨ Enhanced Fitur</h4>
                                     </div>
                                     """, unsafe_allow_html=True)
                                     
@@ -616,19 +616,19 @@ with tab1:
                                 if confidence_chart:
                                     st.pyplot(confidence_chart)
                         else:
-                            st.error("❌ Prediction failed")
+                            st.error("❌ Prediksi gagal")
                     else:
                         st.markdown("""
                         <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border-radius: 15px; color: white;">
-                            <h3>👋 No Hand Detected</h3>
-                            <p>Please ensure your hand is clearly visible in the image</p>
+                            <h3>👋 Tangan Tidak Terdeteksi</h3>
+                            <p>Pastikan tangan terlihat jelas pada gambar</p>
                         </div>
                         """, unsafe_allow_html=True)
             else:
                 st.markdown("""
                 <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border-radius: 15px; color: white;">
-                    <h3>⚠️ Model Not Loaded</h3>
-                    <p>Please load a model from the sidebar first</p>
+                    <h3>⚠️ Model Belum Dimuat</h3>
+                    <p>Silakan muat model dari sidebar terlebih dahulu</p>
                 </div>
                 """, unsafe_allow_html=True)
     
@@ -639,12 +639,12 @@ with tab2:
     
     st.markdown("""
     <div style="text-align: center; margin-bottom: 2rem;">
-        <h2 style="color: #667eea;">📹 Live Camera Detection</h2>
-        <p style="font-size: 1.1rem; color: #666;">Capture images using your webcam for real-time detection</p>
+        <h2 style="color: #667eea;">📹 Kamera Langsung Detection</h2>
+        <p style="font-size: 1.1rem; color: #666;">Gunakan webcam untuk deteksi secara real-time</p>
     </div>
     """, unsafe_allow_html=True)
 
-    img_file = st.camera_input("📸 Take a picture with your webcam")
+    img_file = st.camera_input("📸 Ambil gambar dengan webcam")
     
     if img_file is not None:
         image = Image.open(img_file)
@@ -654,15 +654,15 @@ with tab2:
         with col1:
             st.markdown("""
             <div style="text-align: center; margin-bottom: 1rem;">
-                <h3 style="color: #667eea;">📷 Captured Image</h3>
+                <h3 style="color: #667eea;">📷 Gambar yang Diambil</h3>
             </div>
             """, unsafe_allow_html=True)
-            st.image(image, caption="Webcam Image", use_column_width=True)
+            st.image(image, caption="Gambar Webcam", use_column_width=True)
         
         with col2:
             st.markdown("""
             <div style="text-align: center; margin-bottom: 1rem;">
-                <h3 style="color: #667eea;">🎯 Live Detection</h3>
+                <h3 style="color: #667eea;">🎯 Deteksi Langsung</h3>
             </div>
             """, unsafe_allow_html=True)
             
@@ -673,7 +673,7 @@ with tab2:
                     if landmarks is not None:
                         image_with_landmarks = np.array(image.copy())
                         image_with_landmarks = detector.draw_landmarks(image_with_landmarks, results)
-                        st.image(image_with_landmarks, caption="Live Detection", use_column_width=True)
+                        st.image(image_with_landmarks, caption="Deteksi Langsung", use_column_width=True)
 
                         prediction, confidence = detector.predict_sign(landmarks)
                         if prediction:
@@ -689,30 +689,30 @@ with tab2:
                             
                             st.markdown(f"""
                             <div class="prediction-box success-animation">
-                                <h3 style="color: white; margin: 0;">🎯 Live Prediction</h3>
+                                <h3 style="color: white; margin: 0;">🎯 Prediksi Langsung</h3>
                                 <div class="prediction-letter">{prediction}</div>
-                                <p class="{conf_class}">{conf_emoji} Confidence: {confidence:.1%}</p>
+                                <p class="{conf_class}">{conf_emoji} Tingkat Keyakinan: {confidence:.1%}</p>
                             </div>
                             """, unsafe_allow_html=True)
                             
                             if confidence > 0.9:
-                                st.success(f"🎉 Excellent detection: {prediction}!")
+                                st.success(f"🎉 Deteksi sangat baik: {prediction}!")
                             else:
-                                st.info(f"Detected: {prediction} ({confidence:.1%})")
+                                st.info(f"Terdeteksi: {prediction} ({confidence:.1%})")
                         else:
-                            st.error("❌ Prediction failed")
+                            st.error("❌ Prediksi gagal")
                     else:
                         st.markdown("""
                         <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border-radius: 15px; color: white;">
-                            <h3>👋 No Hand Detected</h3>
+                            <h3>👋 Tangan Tidak Terdeteksi</h3>
                             <p>Position your hand clearly in front of the camera</p>
                         </div>
                         """, unsafe_allow_html=True)
             else:
                 st.markdown("""
                 <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border-radius: 15px; color: white;">
-                    <h3>⚠️ Model Not Loaded</h3>
-                    <p>Please load a model from the sidebar first</p>
+                    <h3>⚠️ Model Belum Dimuat</h3>
+                    <p>Silakan muat model dari sidebar terlebih dahulu</p>
                 </div>
                 """, unsafe_allow_html=True)
     
@@ -722,7 +722,7 @@ if detector.prediction_history:
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; margin: 2rem 0;">
-        <h2 style="color: #667eea;">📈 Prediction History</h2>
+        <h2 style="color: #667eea;">📈 Riwayat Prediksi</h2>
     </div>
     """, unsafe_allow_html=True)
     
@@ -742,7 +742,7 @@ if detector.prediction_history:
 st.markdown("---")
 st.markdown("""
 <div class="footer">
-    <h2>🤟 SIBI Sign Language Detection System</h2>
-    <p>🚀 Powered by Streamlit • 🤖 MediaPipe • 🧠 Machine Learning</p>
+    <h2>🤟 Sistem Deteksi Bahasa Isyarat SIBI System</h2>
+    <p>🚀 Dibangun dengan Streamlit • 🤖 MediaPipe • 🧠 Machine Learning</p>
 </div>
 """, unsafe_allow_html=True)
