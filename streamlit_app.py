@@ -639,7 +639,7 @@ with tab2:
     
     st.markdown("""
     <div style="text-align: center; margin-bottom: 2rem;">
-        <h2 style="color: #667eea;">📹 Kamera Langsung Detection</h2>
+        <h2 style="color: #667eea;">📹 Deteksi Langsung</h2>
         <p style="font-size: 1.1rem; color: #666;">Gunakan webcam untuk deteksi secara real-time</p>
     </div>
     """, unsafe_allow_html=True)
